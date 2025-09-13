@@ -23,7 +23,7 @@ class ResidualBlock(nn.Module):
             else nn.Identity()
         )
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual_connection = x
 
         x = self.groupnorm_1(x)
@@ -39,8 +39,33 @@ class ResidualBlock(nn.Module):
         return x
 
 
+class UpsampleBlock(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, interpolate: bool = False):
+        super().__init__()
+
+        if interpolate:
+            self.upsample = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True),
+                nn.Conv2d(
+                    in_channels, out_channels, kernel_size=3, stride=1, padding="same"
+                ),
+            )
+
+        else:
+            self.upsample = nn.ConvTranspose2d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=2,
+                stride=2,
+            )
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        return self.upsample(inputs)
+
+
 if __name__ == "__main__":
-    rb = ResidualBlock(8, 16, 4).cuda()
+    # m = ResidualBlock(8, 16, 4).cuda()
+    m = UpsampleBlock(8, 16).cuda()
     tn = torch.randn(3, 8, 32, 32, device="cuda")
-    out = rb(tn)
+    out = m(tn)
     print(out.shape)
