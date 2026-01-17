@@ -24,7 +24,7 @@ class ResidualBlock(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        residual_connection = x
+        residual_connection = self.residual_connection(x)
 
         x = self.groupnorm_1(x)
         x = F.relu(x)
@@ -34,7 +34,7 @@ class ResidualBlock(nn.Module):
         x = F.relu(x)
         x = self.conv_2(x)
 
-        x = x + self.residual_connection(residual_connection)
+        x = x + residual_connection
 
         return x
 
@@ -64,8 +64,8 @@ class UpsampleBlock(nn.Module):
 
 
 if __name__ == "__main__":
-    # m = ResidualBlock(8, 16, 4).cuda()
-    m = UpsampleBlock(8, 16).cuda()
+    m = ResidualBlock(8, 16, 4).cuda()
+    # m = UpsampleBlock(8, 16).cuda()
     tn = torch.randn(3, 8, 32, 32, device="cuda")
     out = m(tn)
     print(out.shape)
