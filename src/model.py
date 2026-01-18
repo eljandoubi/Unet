@@ -63,6 +63,33 @@ class UpsampleBlock(nn.Module):
         return self.upsample(inputs)
 
 
+class UNET(nn.Module):
+    def __init__(
+        self,
+        in_channels: int = 3,
+        num_classes: int = 150,
+        start_dim: int = 64,
+        dim_mults: tuple[int] = (1, 2, 4, 8),
+        residual_blocks_per_group: int = 1,
+        groupnorm_num_groups: int = 16,
+        interpolated_upsample: bool = False,
+        skip_connection: bool = True,
+    ):
+        super().__init__()
+
+        self.input_image_channels = in_channels
+        self.interpolate = interpolated_upsample
+        self.skip_connection = skip_connection
+
+                #######################################
+        ### COMPUTE ALL OF THE CONVOLUTIONS ###
+        #######################################
+
+        ### Get Number of Channels at Each Block ###
+        channel_sizes = [start_dim*i for i in dim_mults]
+        starting_channel_size, ending_channel_size = channel_sizes[0], channel_sizes[-1]
+
+
 if __name__ == "__main__":
     m = ResidualBlock(8, 16, 4).cuda()
     # m = UpsampleBlock(8, 16).cuda()
