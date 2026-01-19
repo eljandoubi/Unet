@@ -51,3 +51,73 @@ class ADE20KDataset(Dataset):
 
     def __len__(self):
         return len(self.file_roots)
+
+    
+    def __getitem__(self, idx):
+
+        ### Grab File Root ###
+        file_root = self.file_roots[idx]
+
+        ### Get Paths to Image and Annotation ###
+        image = os.path.join(self.path_to_images, f"{file_root}.jpg")
+        annot = os.path.join(self.path_to_annotations, f"{file_root}.png")
+
+        ### Load Image and Annotation ###
+        image = Image.open(image).convert("RGB")
+        annot = Image.open(annot)
+
+        ### Train Image Transforms ###
+        if self.train and (not self.inference_mode):
+
+            ### Resize Image and Annotation ###
+            if random.random() < 0.5:
+                
+                image = self.resize(image)
+                annot = self.resize(annot)
+
+            ### Random Resized Crop ###
+            else:
+
+                ### Get Smaller Side ###
+                min_side = min(image.size)
+    
+                ### Get a Random Crop Size with Ratio ###
+                random_ratio = random.uniform(self.min_ratio, self.max_ratio)
+
+                ### Compute Crop Size ###
+                crop_size = int(random_ratio * min_side)
+
+                ### Get Parameters of Random Crop ###
+                i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
+
+                ### Crop Image and Annotation ###
+                image = TF.crop(image, i, j, h, w)
+                annot = TF.crop(annot, i, j, h, w)
+
+                ### Resize Image to Desired Image Size ###
+                image = self.resize(image)
+                annot = self.resize(annot)
+            
+
+            ### Random Horizontal Flip ###
+            if random.random() < 0.5:
+                image = self.horizontal_flip(image)
+                annot = self.horizontal_flip(annot)
+
+        ### Validation Image Transforms ###
+        else:
+
+            image = self.resize(image)
+            annot = self.resize(annot)
+                
+        ### Convert Everything to Tensors ###
+        image = self.totensor(image)
+        annot = torch.from_numpy(np.array(annot,dtype=np.long))
+
+        ### Update Annotations as class 0 is other and not needed ###
+        annot = annot - 1 # Make it from [0-150] to [-1-149]
+
+        ### Normalize Image ###
+        image = self.normalize(image)
+
+        return image, annot
