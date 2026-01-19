@@ -228,8 +228,8 @@ class UNET(nn.Module):
             padding="same",
         )
 
-    def forward(self, x):
-        residuals = []
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residuals: list[torch.Tensor] = []
 
         ### Pass Through Projection and Store Residual ###
         x = self.conv_in_proj(x)
