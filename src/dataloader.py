@@ -52,9 +52,7 @@ class ADE20KDataset(Dataset):
     def __len__(self):
         return len(self.file_roots)
 
-    
     def __getitem__(self, idx):
-
         ### Grab File Root ###
         file_root = self.file_roots[idx]
 
@@ -68,19 +66,16 @@ class ADE20KDataset(Dataset):
 
         ### Train Image Transforms ###
         if self.train and (not self.inference_mode):
-
             ### Resize Image and Annotation ###
             if random.random() < 0.5:
-                
                 image = self.resize(image)
                 annot = self.resize(annot)
 
             ### Random Resized Crop ###
             else:
-
                 ### Get Smaller Side ###
                 min_side = min(image.size)
-    
+
                 ### Get a Random Crop Size with Ratio ###
                 random_ratio = random.uniform(self.min_ratio, self.max_ratio)
 
@@ -88,7 +83,9 @@ class ADE20KDataset(Dataset):
                 crop_size = int(random_ratio * min_side)
 
                 ### Get Parameters of Random Crop ###
-                i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
+                i, j, h, w = transforms.RandomCrop.get_params(
+                    image, output_size=(crop_size, crop_size)
+                )
 
                 ### Crop Image and Annotation ###
                 image = TF.crop(image, i, j, h, w)
@@ -97,7 +94,6 @@ class ADE20KDataset(Dataset):
                 ### Resize Image to Desired Image Size ###
                 image = self.resize(image)
                 annot = self.resize(annot)
-            
 
             ### Random Horizontal Flip ###
             if random.random() < 0.5:
@@ -106,16 +102,15 @@ class ADE20KDataset(Dataset):
 
         ### Validation Image Transforms ###
         else:
-
             image = self.resize(image)
             annot = self.resize(annot)
-                
+
         ### Convert Everything to Tensors ###
         image = self.totensor(image)
-        annot = torch.from_numpy(np.array(annot,dtype=np.long))
+        annot = torch.from_numpy(np.array(annot, dtype=np.long))
 
         ### Update Annotations as class 0 is other and not needed ###
-        annot = annot - 1 # Make it from [0-150] to [-1-149]
+        annot = annot - 1  # Make it from [0-150] to [-1-149]
 
         ### Normalize Image ###
         image = self.normalize(image)
