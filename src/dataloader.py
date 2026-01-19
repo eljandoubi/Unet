@@ -49,10 +49,10 @@ class ADE20KDataset(Dataset):
         self.horizontal_flip = transforms.RandomHorizontalFlip(p=1)
         self.totensor = transforms.ToTensor()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.file_roots)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.LongTensor]:
         ### Grab File Root ###
         file_root = self.file_roots[idx]
 
@@ -116,3 +116,11 @@ class ADE20KDataset(Dataset):
         image = self.normalize(image)
 
         return image, annot
+
+
+if __name__ == "__main__":
+    ds = ADE20KDataset("extracted_files/ADEChallengeData2016")
+    print(len(ds))
+    x, y = ds[0]
+    print(x.shape, x.dtype)
+    print(y.shape, y.dtype)
