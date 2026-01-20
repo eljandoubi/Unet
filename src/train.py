@@ -2,6 +2,8 @@ import os
 import pickle
 import numpy as np
 from tqdm import tqdm
+import kagglehub
+from dotenv import load_dotenv
 import torch
 import torch.nn as nn
 from torch import optim
@@ -11,6 +13,7 @@ from accelerate import Accelerator
 from dataloader import ADE20KDataset
 from model import UNET
 
+load_dotenv()
 
 ### Define Simple Training Logger ###
 class LocalLogger:
@@ -53,7 +56,6 @@ def train(
     image_size=256,
     experiment_name="unet_w_skip_ade20k",
     skip_connection=True,
-    path_to_data="extracted_files/ADEChallengeData2016",
 ):
     ### Define Accelerator ###
     accelerator = Accelerator(gradient_accumulation_steps=gradient_accumulation_steps)
@@ -65,6 +67,10 @@ def train(
 
     ### Instantiate Logger ###
     logger = LocalLogger(path_to_experiment, f"{experiment_name}_log.pkl")
+
+    path = kagglehub.dataset_download("awsaf49/ade20k-dataset")
+
+    path_to_data=f"{path}/ADEChallengeData2016"
 
     ### Load Dataset ###
     micro_batchsize = batch_size // gradient_accumulation_steps
