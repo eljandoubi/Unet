@@ -28,7 +28,7 @@ See `pyproject.toml` for the complete list and version requirements.
 1. Clone the repository.
 2. Install the dependencies:
    ```bash
-   pip install .
+   uv sync
    ```
 
 ## Usage
